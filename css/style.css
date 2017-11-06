@@ -1,0 +1,69 @@
+/* ================================= 
+  Base Element Styles
+==================================== */
+
+* {
+	box-sizing: border-box;
+}
+
+body {
+	background-color: #edeff0;
+	font-family: 'Concert One', cursive;
+	color: #373737;
+}
+
+h1 {
+	text-align: center;
+	font-size: 1.2em;
+}
+
+h3 {
+	font-size: 1.1em;
+}
+
+.main-wrapper {
+	width: 100%;
+	background-color: none;
+	padding: 20px;
+}
+
+/* ================================= 
+  Employee Styles
+==================================== */
+
+.employee {
+	display: flex; 
+	background-color: #345d88;
+	color: #fff;
+	border-radius: .35em;
+	border: 3px #373737 solid;
+	width: 100%;
+	padding: 10px;
+	text-align: center;
+}
+
+.employee img {
+	border-radius: 50%;
+	max-width: 90px;
+	max-height: 90px;
+	align-self: center;
+	margin-right: 1em;
+}
+
+.info {
+	display: block;
+}
+
+.info span {
+	font-size: 14px;
+}
+
+.email {
+	display: block;
+	margin-bottom: 2px;
+}
+
+.location {
+	display: block;
+	margin-bottom: 1em;
+}
