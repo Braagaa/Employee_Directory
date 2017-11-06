@@ -14,7 +14,7 @@ body {
 
 h1 {
 	text-align: center;
-	font-size: 1.2em;
+	font-size: 1em;
 }
 
 h3 {
@@ -42,6 +42,10 @@ h3 {
 	text-align: center;
 }
 
+.employee:hover {
+	animation: bob 1.3s ease-in 0.5s infinite;
+}
+
 .employee img {
 	border-radius: 50%;
 	max-width: 90px;
@@ -66,4 +70,33 @@ h3 {
 .location {
 	display: block;
 	margin-bottom: 1em;
+}
+
+/* ================================= 
+  Animations
+==================================== */
+
+@keyframes border-color { /*Maybe use*/
+	from {border-color: #373737;}
+	to {border-color: #fff;}
+}
+
+@keyframes bob {
+	from {
+		transform: translateY(-8px);
+	}
+	50% {
+		transform: translateY(-4px);
+	}
+	to {
+		transform: translateY(-8px);
+	}
+}
+
+@keyframes lift {
+	to {transform: translateY(-8px)}
+}
+
+.animate-lift:hover {
+	animation: lift 0.5s ease-in;
 }

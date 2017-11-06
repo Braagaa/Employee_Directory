@@ -51,5 +51,5 @@ const query = params
 	.join('&')
 	.insert(randomUserAPI, 0, 0);
 	
-getJSON(query)
-	.then(console.log);
+//getJSON(query)
+	//.then(console.log);
