@@ -21,6 +21,14 @@ h3 {
 	font-size: 1.1em;
 }
 
+ul {
+	padding: 0;
+}
+
+li {
+	list-style-type: none;
+}
+
 .main-wrapper {
 	width: 100%;
 	background-color: none;
@@ -39,6 +47,7 @@ h3 {
 	border: 3px #373737 solid;
 	width: 100%;
 	padding: 10px;
+	margin-bottom: 15px;
 	text-align: center;
 }
 

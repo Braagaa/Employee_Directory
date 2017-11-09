@@ -1,27 +1,62 @@
 /*
-* Similar to Array.prototype.reduce but used to iterate over an Object's
-* key and values
+* Takes a String and attempts to capitalize the first character
+* and returns it as a new String
 */
-if (!Object.prototype.reduce) { 
-	Object.prototype.reduce = function(fn, acc) {
-		for (let prop in this) {
-			if (this.hasOwnProperty(prop)) {
-				acc = fn(acc, this[prop], prop, this);
-			}
-		}
-		return acc;
-	}
-}
+const capitalize = str => str.charAt(0).toUpperCase() + str.slice(1);
+
 /*
-* Inserts another String to a position to the current String
+* Take a value and attempts to call on it's toString method
 */
-if (!String.prototype.insert) {
-	String.prototype.insert = function(value, i) {
-		value = typeof value === 'string' ? value : '';
-		const clone = this.slice(0, this.length).split('');
-		clone.splice(0, i, value)
-		return clone.join('');
-	}
+const toString = val => (val).toString();
+
+/*
+* Calls .replace method on a String and uses a regExp and fun as its 
+* arguments
+*/
+const replace = (regExp, func) => str => str.replace(regExp, func);
+
+/*
+* Used with .replace method to change the format of a date String
+*/
+const birthdayFormat = (match, year, month, day) => `Birthday: ${day}/${month}/${year}`;
+
+/*
+* Concatenate a string at the start of it
+*/
+const prependString = val => str => val + str;
+
+//Transformation functions
+const fullName = R.pipe(
+	R.props(['first', 'last']), //get the values of the obj into an array
+	R.map(capitalize),          //capitalize the first letter of each String in the array
+	R.join(' ')                 //join the array to form one String
+);
+const capitalizeAllProps = R.mapObjIndexed( //map through each key/value pair in the object
+	R.pipe(
+		toString,            //make the value into a String
+		R.split(' '),        //make the String into an array for every ' ' character
+		R.map(capitalize),   //capitalize the first letter of each String in the array
+		R.join(' ')          //join the array to form one String
+	)
+);
+const reformatDate = R.pipe(
+	R.split(' '),                                      //make the String into an array for every ' ' character
+	R.head,                                            //get the first value in the array
+	replace(/(\d{4})-(\d{2})-(\d{2})/, birthdayFormat) //replace the String
+);
+
+//DOM functions
+const createEmployeeElement = function({picture, name, location, nat, email, phone, dob}) {
+	return `<li class="animate-lift">
+		        <div class="employee">
+					<img src="${picture}">
+					<div class="info">
+						<h3 clas="name">${name}</h3>
+						<span class="email">${email}</span>
+						<span class="location">${location.state}, ${nat}</span>
+					</div>
+				</div>
+			</li>`;
 }
 
 const getJSON = function(url) {
@@ -44,12 +79,30 @@ const params = {
 	format: 'json',
 	exc: 'login'
 }
+const transformations = {
+	picture: R.prop('large'),
+	name: fullName,
+	location: capitalizeAllProps,
+	dob: reformatDate
+}
+const neededProps = ['picture', 'name', 'location', 'nat', 'email', 'phone', 'dob'];
 
-const query = params
-	.reduce((query, value, key) => [...query, `${key}=${value}`], [])
-	.map(encodeURI)
-	.join('&')
-	.insert(randomUserAPI, 0, 0);
+const employeesList = document.getElementById('employees');
+
+const query = R.pipe(
+	R.mapObjIndexed((val, key) => `${key}=${val}`),
+	R.values,
+	R.map(encodeURI),
+	R.join('&'),
+	prependString(randomUserAPI)
+)(params);
+
+const employees = getJSON(query)
+	.then(obj => obj.results)
+	.then(R.map(R.pick(neededProps)))
+	.then(R.map(R.evolve(transformations)));
 	
-//getJSON(query)
-	//.then(console.log);
+const employeeElements = employees
+	.then(R.map(createEmployeeElement))
+	.then(R.join(''))
+	.then(HTMLStrArr => employeesList.innerHTML = HTMLStrArr);
