@@ -53,7 +53,7 @@ const createEmployeeElement = function({picture, name, location, nat, email, pho
 					<div class="info">
 						<h3 clas="name">${name}</h3>
 						<span class="email">${email}</span>
-						<span class="location">${location.state}, ${nat}</span>
+						<span class="location">${location.city}</span>
 					</div>
 				</div>
 			</li>`;

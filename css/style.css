@@ -81,6 +81,65 @@ li {
 }
 
 /* ================================= 
+  Modal Styles
+==================================== */
+
+.modal {
+	background-color: white/*#345d88*/;
+	border-radius: .35em;
+	border: #345d88 3px solid;
+	z-index: 20;
+	width: 50%;
+	margin: auto;
+	max-width: 450px;
+	min-width: 320px;
+	padding: 1.5em;
+	text-align: center;
+}
+
+.modal-top {
+	display: flex;
+	flex-direction: column;
+	border-bottom: 1px solid #345d88;
+	margin-bottom: 1em;
+	padding-bottom: 1em;
+}
+
+.portrait {
+	border-radius: 50%;
+	display: block;
+	margin: 0 auto;
+}
+
+.exit {
+	background-color: #fff;
+	width: 18px;
+	height: 18px;
+	border: none;
+	right: 50px;
+	align-self: flex-end;
+}
+
+.address-info {
+	margin: 10px 0;
+}
+
+.address-info:last-of-type {
+	margin-bottom: 0;
+}
+
+.over-lay {
+	background-color: rgba(55, 55, 55, 0.8);
+	display: flex;
+	position: fixed;
+	width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+	z-index: 10;
+}
+
+/* ================================= 
   Animations
 ==================================== */
 
