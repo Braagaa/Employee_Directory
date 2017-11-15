@@ -67,9 +67,13 @@ const createEmployeeElement = function({picture, name, location, nat, email, pho
 const modalHTMLString = `<div id="over-lay">
 						    <div class="modal">
 								<div class="modal-top">
-									<img class="exit" src="img/exit.svg">
+									<img class="exit" src="img/exit.svg" alt="Exit">
 									<img class="portrait">
-									<h3 class="name"></h3>
+									<div class="nav">
+										<img class="arrow" src="img/left.svg" alt="Left Arrow">
+										<h3 class="name"></h3>
+										<img class="arrow" src="img/left.svg" alt="Right Arrow">
+									</div>
 									<span class="email"></span>
 									<span class="location"></span>
 								</div>

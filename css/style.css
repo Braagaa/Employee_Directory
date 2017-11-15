@@ -115,13 +115,26 @@ li {
 	margin: 0 auto;
 }
 
-.exit {
+.nav {
+	display: flex;
+	justify-content: space-around;
+}
+
+.exit,
+.arrow {
 	background-color: #fff;
 	width: 18px;
 	height: 18px;
 	border: none;
-	right: 50px;
+}
+
+.exit {
 	align-self: flex-end;
+	right: 50px;
+}
+
+.arrow:last-child{
+	transform: rotate(180deg);
 }
 
 .address-info {
