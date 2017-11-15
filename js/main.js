@@ -46,19 +46,51 @@ const reformatDate = R.pipe(
 );
 
 //DOM functions
+const setProp = R.curry(function(prop, value, elm) {
+	elm[prop] = value;
+	return elm;
+});
+
 const createEmployeeElement = function({picture, name, location, nat, email, phone, dob}) {
 	return `<li class="animate-lift">
 		        <div class="employee">
 					<img src="${picture}">
 					<div class="info">
-						<h3 clas="name">${name}</h3>
+						<h3 class="name">${name}</h3>
 						<span class="email">${email}</span>
 						<span class="location">${location.city}</span>
 					</div>
 				</div>
-			</li>`;
+	        </li>`;
 }
 
+const modalHTMLString = `<div id="over-lay">
+						    <div class="modal">
+								<div class="modal-top">
+									<img class="exit" src="img/exit.svg">
+									<img class="portrait">
+									<h3 class="name"></h3>
+									<span class="email"></span>
+									<span class="location"></span>
+								</div>
+								<div class="modal-bottom">
+									<p class="address-info"></p>
+									<p class="address-info"></p>
+									<p class="address-info"></p>
+								</div>
+							</div>
+						 </div>`;
+
+const updateModal = function({picture, name, location, nat, email, phone, dob}) {
+	modalPortrait.src = picture;
+	modalName.textContent = name;
+	modalEmail.textContent = email;
+	modalCity.textContent = location.city;
+	modalPhone.textContent = phone;
+	modalAddress.textContent = `${location.street}, ${nat} ${location.postcode}`;
+	modalBirthday.textContent = dob;
+}
+						 
 const getJSON = function(url) {
 	return new Promise(function(resolve) {
 		const xhr = new XMLHttpRequest();
@@ -88,6 +120,20 @@ const transformations = {
 const neededProps = ['picture', 'name', 'location', 'nat', 'email', 'phone', 'dob'];
 
 const employeesList = document.getElementById('employees');
+const content = document.getElementById('content');
+
+content.insertAdjacentHTML('afterend', modalHTMLString); //creates the modal
+
+const overLay = document.getElementById('over-lay');
+const modalTop = overLay.querySelector('.modal-top');
+const modalBottom = overLay.querySelector('.modal-bottom');
+const modalPortrait = modalTop.querySelector('.portrait');
+const modalName = modalTop.querySelector('.name');
+const modalEmail = modalTop.querySelector('.email');
+const modalCity = modalTop.querySelector('.location');
+const modalPhone = modalBottom.children[0];
+const modalAddress = modalBottom.children[1];
+const modalBirthday = modalBottom.children[2];
 
 const query = R.pipe(
 	R.mapObjIndexed((val, key) => `${key}=${val}`),
@@ -105,4 +151,17 @@ const employees = getJSON(query)
 const employeeElements = employees
 	.then(R.map(createEmployeeElement))
 	.then(R.join(''))
-	.then(HTMLStrArr => employeesList.innerHTML = HTMLStrArr);
+	.then(setProp('innerHTML', R.__, employeesList))//side-effects
+
+//Event Handlers
+
+employeesList.addEventListener('click',function(event) {
+	const employee = R.find(R.propEq('className', 'employee'), event.path);
+	if (employee) {
+		const email = employee.querySelector('.email').textContent;
+		employees
+			.then(R.find(R.propEq('email', email)))
+			.then(updateModal)
+			.then(() => overLay.style.visibility = 'visible')
+	}
+});
