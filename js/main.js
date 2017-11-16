@@ -109,6 +109,11 @@ const getJSON = function(url) {
 	});
 }
 
+const checkRange = length => index => 
+index < 0 ? length - 1 :
+index === length ? 0 :
+index;
+
 const randomUserAPI = 'https://randomuser.me/api/?';
 const params = {
 	results: 12,
@@ -138,6 +143,10 @@ const modalCity = modalTop.querySelector('.location');
 const modalPhone = modalBottom.children[0];
 const modalAddress = modalBottom.children[1];
 const modalBirthday = modalBottom.children[2];
+const modalNav = modalTop.querySelector('.nav');
+const modalExitButton = modalTop.querySelector('.exit');
+const modalLeftArrow = modalTop.querySelector('.arrow:first-child');
+const modalRightArrow = modalTop.querySelector('.arrow:last-child');
 
 const query = R.pipe(
 	R.mapObjIndexed((val, key) => `${key}=${val}`),
@@ -159,13 +168,37 @@ const employeeElements = employees
 
 //Event Handlers
 
+const nextEmployee = function(incrementOrDecrement) {
+	return function(event) {
+		employees.then(employees => {
+			R.pipe(
+				R.findIndex(R.propEq('email', modalEmail.textContent)),
+				incrementOrDecrement,
+				checkRange(employees.length),
+				R.nth(R.__, employees),
+				R.tap(updateModal)
+			)(employees);
+		});
+	}
+}
+
 employeesList.addEventListener('click',function(event) {
 	const employee = R.find(R.propEq('className', 'employee'), event.path);
 	if (employee) {
 		const email = employee.querySelector('.email').textContent;
 		employees
 			.then(R.find(R.propEq('email', email)))
-			.then(updateModal)
-			.then(() => overLay.style.visibility = 'visible')
+			.then(R.tap(updateModal))
+			.then(() => {
+				overLay.style.visibility = 'visible';
+				content.className = 'perspective';
+			});
 	}
 });
+
+modalExitButton.addEventListener('click', function(event) {
+	overLay.style.visibility = 'hidden';
+});
+
+modalLeftArrow.addEventListener('click', nextEmployee(R.dec));
+modalRightArrow.addEventListener('click', nextEmployee(R.inc));

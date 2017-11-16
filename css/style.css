@@ -35,8 +35,6 @@ li {
 	background-color: none;
 	padding: 20px;
 	margin: 0 auto;
-	transition: transform 2s ease-in-out;
-	transform: rotateX(10deg);
 }
 
 /* ================================= 
@@ -159,6 +157,8 @@ li {
 
 .perspective {
 	perspective: 600px;
+	transition: transform 2s ease-in-out;
+	transform: rotateX(10deg);
 }
 
 /* ================================= 
