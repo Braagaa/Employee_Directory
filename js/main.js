@@ -65,7 +65,8 @@ const createEmployeeElement = function({picture, name, location, nat, email, pho
 }
 
 const modalHTMLString = `<div id="over-lay">
-						    <div class="modal">
+							<div class="animate-flip">
+							<div class="modal">
 								<div class="modal-top">
 									<img class="exit" src="img/exit.svg" alt="Exit">
 									<img class="portrait">
@@ -82,6 +83,7 @@ const modalHTMLString = `<div id="over-lay">
 									<p class="address-info"></p>
 									<p class="address-info"></p>
 								</div>
+							</div>
 							</div>
 						 </div>`;
 
@@ -109,6 +111,16 @@ const getJSON = function(url) {
 	});
 }
 
+const setTimeoutPromise = function(time) {
+	return function(value) {
+		return new Promise(function(resolve) {
+			setTimeout(function(value) {
+				resolve(value);
+			}, time, value);
+		});
+	}
+}
+
 const checkRange = length => index => 
 index < 0 ? length - 1 :
 index === length ? 0 :
@@ -128,12 +140,15 @@ const transformations = {
 }
 const neededProps = ['picture', 'name', 'location', 'nat', 'email', 'phone', 'dob'];
 
+//Elements
 const employeesList = document.getElementById('employees');
 const content = document.getElementById('content');
 
 content.insertAdjacentHTML('afterend', modalHTMLString); //creates the modal
 
 const overLay = document.getElementById('over-lay');
+const modalFlip = overLay.querySelector('.animate-flip');
+const modal = overLay.querySelector('.modal');
 const modalTop = overLay.querySelector('.modal-top');
 const modalBottom = overLay.querySelector('.modal-bottom');
 const modalPortrait = modalTop.querySelector('.portrait');
@@ -148,6 +163,22 @@ const modalExitButton = modalTop.querySelector('.exit');
 const modalLeftArrow = modalTop.querySelector('.arrow:first-child');
 const modalRightArrow = modalTop.querySelector('.arrow:last-child');
 
+const modalEffects = {
+	exit: function() {
+		overLay.classList.remove('perspective');
+		modal.classList.remove('newspaper');
+		setTimeoutPromise(300)(null)  //allows the animation to fully perform
+			.then(() => overLay.style.visibility = 'hidden');
+	},
+	open: function() {
+		overLay.style.visibility = 'visible';
+		overLay.classList.add('perspective');
+		modal.classList.add('newspaper');
+	},
+	delayForEmployeesToChange: 250,
+	delayForRemoveFlip: 250
+};
+
 const query = R.pipe(
 	R.mapObjIndexed((val, key) => `${key}=${val}`),
 	R.values,
@@ -160,7 +191,10 @@ const employees = getJSON(query)
 	.then(obj => obj.results)
 	.then(R.map(R.pick(neededProps)))
 	.then(R.map(R.evolve(transformations)));
-	
+
+const employeesCachedImg = employees
+	.then()
+
 const employeeElements = employees
 	.then(R.map(createEmployeeElement))
 	.then(R.join(''))
@@ -168,36 +202,39 @@ const employeeElements = employees
 
 //Event Handlers
 
+//nextEmployee has intergrated effects and cannot be put in modalEffects Obj
 const nextEmployee = function(incrementOrDecrement) {
 	return function(event) {
-		employees.then(employees => {
-			R.pipe(
-				R.findIndex(R.propEq('email', modalEmail.textContent)),
-				incrementOrDecrement,
-				checkRange(employees.length),
-				R.nth(R.__, employees),
-				R.tap(updateModal)
-			)(employees);
-		});
+		employees
+			.then(R.tap(() => modalFlip.classList.add('flip')))
+			.then(setTimeoutPromise(modalEffects.delayForEmployeesToChange))
+			.then(employees => {
+				R.pipe(
+					R.findIndex(R.propEq('email', modalEmail.textContent)),
+					incrementOrDecrement,
+					checkRange(employees.length),
+					R.nth(R.__, employees),
+					R.tap(updateModal)
+				)(employees);
+			})
+			.then(setTimeoutPromise(modalEffects.delayForRemoveFlip))
+			.then(() => modalFlip.classList.remove('flip'));
 	}
 }
 
-employeesList.addEventListener('click',function(event) {
+employeesList.addEventListener('click', function(event) {
 	const employee = R.find(R.propEq('className', 'employee'), event.path);
 	if (employee) {
 		const email = employee.querySelector('.email').textContent;
 		employees
 			.then(R.find(R.propEq('email', email)))
 			.then(R.tap(updateModal))
-			.then(() => {
-				overLay.style.visibility = 'visible';
-				content.className = 'perspective';
-			});
+			.then(R.tap(modalEffects.open));
 	}
 });
 
 modalExitButton.addEventListener('click', function(event) {
-	overLay.style.visibility = 'hidden';
+	modalEffects.exit();
 });
 
 modalLeftArrow.addEventListener('click', nextEmployee(R.dec));

@@ -89,14 +89,13 @@ li {
 	background-color: white/*#345d88*/;
 	border-radius: .35em;
 	border: #345d88 3px solid;
-	z-index: 20;
-	width: 50%;
-	margin: auto;
-	max-width: 450px;
-	min-width: 320px;
 	padding: 1.5em;
 	text-align: center;
-	transition: transform 0.5s ease-in;
+	transform: scale(0) rotate(720deg);
+	transition: transform 0.5s, opacity 0.5s;
+	opacity: 0;
+	transform-style: preserve-3d;
+	/*backface-visibility: hidden;*/
 }
 
 .modal-top {
@@ -155,20 +154,9 @@ li {
 	z-index: 10;
 }
 
-.perspective {
-	perspective: 600px;
-	transition: transform 2s ease-in-out;
-	transform: rotateX(10deg);
-}
-
 /* ================================= 
   Animations
 ==================================== */
-
-@keyframes border-color { /*Maybe use*/
-	from {border-color: #373737;}
-	to {border-color: #fff;}
-}
 
 @keyframes bob {
 	from {
@@ -186,8 +174,35 @@ li {
 	to {transform: translateY(-8px)}
 }
 
+@keyframes flip-ani {
+	from {
+		transform: rotateY(360deg);
+	}
+}
+
 .animate-lift:hover {
 	animation: lift 0.3s ease-in forwards;
+}
+
+.newspaper {
+	transform: scale(1) rotate(0);
+	opacity: 1;
+}
+
+.flip {
+	animation: flip-ani 0.5s;
+}
+
+.animate-flip {
+	z-index: 20;
+	width: 50%;
+	margin: auto;
+	max-width: 450px;
+	min-width: 320px;
+}
+
+.perspective {
+	perspective: 1300px;
 }
 
 /* ================================= 
