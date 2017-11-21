@@ -44,6 +44,9 @@ const reformatDate = R.pipe(
 	R.head,                                            //get the first value in the array
 	replace(/(\d{4})-(\d{2})-(\d{2})/, birthdayFormat) //replace the String
 );
+const reduceIndexed = R.addIndex(R.reduce);
+const getIndexesFalse = reduceIndexed((acc, val, index) => !val ? acc.concat(index) : acc, []);
+const getIndexesTrue = reduceIndexed((acc, val, index) => val ? acc.concat(index) : acc, []);
 
 //DOM functions
 const setProp = R.curry(function(prop, value, elm) {
@@ -233,17 +236,23 @@ const employeeElements = employees
 //nextEmployee has intergrated effects and cannot be put in modalEffects Obj
 const nextEmployee = function(incrementOrDecrement) {
 	return function(event) {
-		employees
+		Promise.all([employeesList.children, employees])
 			.then(R.tap(() => modalFlip.classList.add('flip')))
 			.then(delay(modalEffects.delayForEmployeesToChange))
-			.then(employees => {
+			.then(([employeeElements, employees]) => {
+				const filterEmployees = R.pipe(
+					R.map(R.pipe(R.path(['style', 'display']), R.equals(''))),
+					getIndexesTrue,
+					R.map(R.nth(R.__, employees)),
+					)(employeeElements);
+				
 				R.pipe(
 					R.findIndex(R.propEq('email', modalEmail.textContent)),
 					incrementOrDecrement,
-					checkRange(employees.length),
-					R.nth(R.__, employees),
+					checkRange(filterEmployees.length),
+					R.nth(R.__, filterEmployees),
 					R.tap(updateModal)
-				)(employees);
+				)(filterEmployees);
 			})
 			.then(delay(modalEffects.delayForRemoveFlip))
 			.then(() => modalFlip.classList.remove('flip'));
@@ -251,14 +260,13 @@ const nextEmployee = function(incrementOrDecrement) {
 }
 
 const filterEmployees = function(input) {
-	const reduceIndexed = R.addIndex(R.reduce);
 	const filterInput = R.pipe((R.map(R.toLower)), R.any(includes(input)));
 	const getEmployee = R.pipe(getChildByIndex(employeesList), R.prop('style'));
 	
 	employees
 		.then(R.map(R.props(['name', 'email'])))
 		.then(R.map(filterInput))
-		.then(reduceIndexed((acc, val, index) => !val ? acc.concat(index) : acc, []))
+		.then(getIndexesFalse)
 		.then(R.map(getEmployee))
 		//.then(R.map(setProp('classList', 'filtered')))
 		.then(R.tap(displayAllEmployees(employeesList)))
