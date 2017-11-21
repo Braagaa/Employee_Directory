@@ -87,6 +87,11 @@ const modalHTMLString = `<div id="over-lay">
 							</div>
 						 </div>`;
 
+const searchBarHTMLString = `<div class="search-wrapper">
+								<label class="label-search" for="search">Seacrh Employee: </label>
+								<input type="text" id="search">
+							 </div>`;
+						 
 const updateModal = function({picture, name, location, nat, email, phone, dob}) {
 	modalPortrait.src = picture;
 	modalName.textContent = name;
@@ -111,7 +116,7 @@ const getJSON = function(url) {
 	});
 }
 
-const setTimeoutPromise = function(time) {
+const delay = function(time) {
 	return function(value) {
 		return new Promise(function(resolve) {
 			setTimeout(function(value) {
@@ -121,10 +126,22 @@ const setTimeoutPromise = function(time) {
 	}
 }
 
+const debounce = function(fn, time) {
+	let timeoutId;
+	return function() {
+		const args = [fn, time].concat(Array.from(arguments));
+		clearTimeout(timeoutId);
+		timeoutId = window.setTimeout.apply(window, args); //proxy the arguments to the setTimeout() method
+	}
+}
+
+//Check functions
 const checkRange = length => index => 
 index < 0 ? length - 1 :
 index === length ? 0 :
 index;
+
+const includes = str1 => str2 => str2.includes(str1);
 
 const randomUserAPI = 'https://randomuser.me/api/?';
 const params = {
@@ -144,7 +161,10 @@ const neededProps = ['picture', 'name', 'location', 'nat', 'email', 'phone', 'do
 const employeesList = document.getElementById('employees');
 const content = document.getElementById('content');
 
+employeesList.insertAdjacentHTML('beforebegin', searchBarHTMLString); //creates the search bar
 content.insertAdjacentHTML('afterend', modalHTMLString); //creates the modal
+
+const searchBar = document.getElementById('search');
 
 const overLay = document.getElementById('over-lay');
 const modalFlip = overLay.querySelector('.animate-flip');
@@ -167,7 +187,7 @@ const modalEffects = {
 	exit: function() {
 		overLay.classList.remove('perspective');
 		modal.classList.remove('newspaper');
-		setTimeoutPromise(300)(null)  //allows the animation to fully perform
+		delay(300)(null)  //allows the animation to fully perform
 			.then(() => overLay.style.visibility = 'hidden');
 	},
 	open: function() {
@@ -178,6 +198,16 @@ const modalEffects = {
 	delayForEmployeesToChange: 250,
 	delayForRemoveFlip: 250
 };
+
+const displayAllEmployees = parent => () =>
+	R.pipe(
+		R.map(elm => elm.style),
+		R.filter(style => style.display === 'none'),
+		//R.forEach(setProp('classList', '')),
+		R.forEach(setProp('display', ''))
+	)(parent.children);
+	
+const getChildByIndex = parent => index => parent.children[index];
 
 const query = R.pipe(
 	R.mapObjIndexed((val, key) => `${key}=${val}`),
@@ -192,9 +222,6 @@ const employees = getJSON(query)
 	.then(R.map(R.pick(neededProps)))
 	.then(R.map(R.evolve(transformations)));
 
-const employeesCachedImg = employees
-	.then()
-
 const employeeElements = employees
 	.then(R.map(createEmployeeElement))
 	.then(R.join(''))
@@ -202,12 +229,13 @@ const employeeElements = employees
 
 //Event Handlers
 
+//Modal Events
 //nextEmployee has intergrated effects and cannot be put in modalEffects Obj
 const nextEmployee = function(incrementOrDecrement) {
 	return function(event) {
 		employees
 			.then(R.tap(() => modalFlip.classList.add('flip')))
-			.then(setTimeoutPromise(modalEffects.delayForEmployeesToChange))
+			.then(delay(modalEffects.delayForEmployeesToChange))
 			.then(employees => {
 				R.pipe(
 					R.findIndex(R.propEq('email', modalEmail.textContent)),
@@ -217,10 +245,26 @@ const nextEmployee = function(incrementOrDecrement) {
 					R.tap(updateModal)
 				)(employees);
 			})
-			.then(setTimeoutPromise(modalEffects.delayForRemoveFlip))
+			.then(delay(modalEffects.delayForRemoveFlip))
 			.then(() => modalFlip.classList.remove('flip'));
 	}
 }
+
+const filterEmployees = function(input) {
+	const reduceIndexed = R.addIndex(R.reduce);
+	const filterInput = R.pipe((R.map(R.toLower)), R.any(includes(input)));
+	const getEmployee = R.pipe(getChildByIndex(employeesList), R.prop('style'));
+	
+	employees
+		.then(R.map(R.props(['name', 'email'])))
+		.then(R.map(filterInput))
+		.then(reduceIndexed((acc, val, index) => !val ? acc.concat(index) : acc, []))
+		.then(R.map(getEmployee))
+		//.then(R.map(setProp('classList', 'filtered')))
+		.then(R.tap(displayAllEmployees(employeesList)))
+		.then(R.forEach(setProp('display', 'none')));
+}
+const debounceFilterEmployees = debounce(filterEmployees, 500);
 
 employeesList.addEventListener('click', function(event) {
 	const employee = R.find(R.propEq('className', 'employee'), event.path);
@@ -239,3 +283,9 @@ modalExitButton.addEventListener('click', function(event) {
 
 modalLeftArrow.addEventListener('click', nextEmployee(R.dec));
 modalRightArrow.addEventListener('click', nextEmployee(R.inc));
+
+//Search Bar Events
+searchBar.addEventListener('keyup', function(event) {
+	const input = event.target.value.toLowerCase();
+	debounceFilterEmployees(input);
+});
