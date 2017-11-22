@@ -25,6 +25,12 @@ const birthdayFormat = (match, year, month, day) => `Birthday: ${day}/${month}/$
 */
 const prependString = val => str => val + str;
 
+
+
+
+
+
+
 //Transformation functions
 const fullName = R.pipe(
 	R.props(['first', 'last']), //get the values of the obj into an array
@@ -44,13 +50,26 @@ const reformatDate = R.pipe(
 	R.head,                                            //get the first value in the array
 	replace(/(\d{4})-(\d{2})-(\d{2})/, birthdayFormat) //replace the String
 );
-const reduceIndexed = R.addIndex(R.reduce);
+const reduceIndexed = R.addIndex(R.reduce);   //its Array.reduce method but with index as a parameter.
+
+/*
+* reduced method where if the value is false, add its index to the list
+*/
 const getIndexesFalse = reduceIndexed((acc, val, index) => !val ? acc.concat(index) : acc, []);
+
+/*
+* reduced method where if the value is true, add its index to the list
+*/
 const getIndexesTrue = reduceIndexed((acc, val, index) => val ? acc.concat(index) : acc, []);
 
 //DOM functions
 const setProp = R.curry(function(prop, value, elm) {
 	elm[prop] = value;
+	return elm;
+});
+
+const classList = R.curry(function(method, value, elm) {
+	elm.classList[method](value);
 	return elm;
 });
 
@@ -104,6 +123,14 @@ const updateModal = function({picture, name, location, nat, email, phone, dob}) 
 	modalAddress.textContent = `${location.street}, ${nat} ${location.postcode}`;
 	modalBirthday.textContent = dob;
 }
+
+const defaultAllEmployees = parent => () =>
+R.pipe(
+	R.filter(R.pathEq(['style', 'display'], 'none')),
+	R.forEach(R.pipe(R.prop('style'), setProp('display', ''))),
+	R.forEach(classList('remove', 'filtered'))
+)(parent.children);
+
 						 
 const getJSON = function(url) {
 	return new Promise(function(resolve) {
@@ -202,16 +229,6 @@ const modalEffects = {
 	delayForRemoveFlip: 250
 };
 
-const displayAllEmployees = parent => () =>
-	R.pipe(
-		R.map(elm => elm.style),
-		R.filter(style => style.display === 'none'),
-		//R.forEach(setProp('classList', '')),
-		R.forEach(setProp('display', ''))
-	)(parent.children);
-	
-const getChildByIndex = parent => index => parent.children[index];
-
 const query = R.pipe(
 	R.mapObjIndexed((val, key) => `${key}=${val}`),
 	R.values,
@@ -261,18 +278,22 @@ const nextEmployee = function(incrementOrDecrement) {
 
 const filterEmployees = function(input) {
 	const filterInput = R.pipe((R.map(R.toLower)), R.any(includes(input)));
-	const getEmployee = R.pipe(getChildByIndex(employeesList), R.prop('style'));
+	const getEmployee = R.pipe(
+		R.nth(R.__, employeesList.children), 
+		classList('add', 'filtered'),
+		R.prop('style')
+	);
 	
 	employees
 		.then(R.map(R.props(['name', 'email'])))
 		.then(R.map(filterInput))
 		.then(getIndexesFalse)
 		.then(R.map(getEmployee))
-		//.then(R.map(setProp('classList', 'filtered')))
-		.then(R.tap(displayAllEmployees(employeesList)))
+		.then(delay(300))
+		.then(R.tap(test(employeesList)))
 		.then(R.forEach(setProp('display', 'none')));
 }
-const debounceFilterEmployees = debounce(filterEmployees, 500);
+const debounceFilterEmployees = debounce(filterEmployees, 300);
 
 employeesList.addEventListener('click', function(event) {
 	const employee = R.find(R.propEq('className', 'employee'), event.path);

@@ -63,7 +63,7 @@ li {
 ==================================== */
 
 #employees li {
-	transition: transform 1s cubic-bezier(.23,-0.41,.23,1.12);
+	transition: transform 0.3s cubic-bezier(.23,-0.41,.23,1.12);
 }
 
 .employee {
@@ -144,9 +144,11 @@ li {
 .exit,
 .arrow {
 	background-color: #fff;
-	width: 18px;
-	height: 18px;
+	width: 23px;
+	height: 23px;
 	border: none;
+	transition: transform 0.5s cubic-bezier(.38,-0.6,.94,1.77);
+	cursor: pointer;
 }
 
 .exit {
