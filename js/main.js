@@ -77,9 +77,12 @@
 		return elm;
 	});
 	
-	const errorElement = function() {
-		return `<p class="error">Sorry, something went wrong! :(</p>`;
-	}
+	const errorElement = `<p class="error">Sorry, something went wrong! :(</p>`;
+	
+	const pageLoaderHTML = `<div class="page-loader">
+								<div class="block1"></div>
+								<div class="block2"></div>
+							</div>`;
 	
 	const createEmployeeElement = function({picture, name, location, nat, email, phone, dob}) {
 		return `<li class="animate-lift">
@@ -259,7 +262,9 @@
 
 	employeesList.insertAdjacentHTML('beforebegin', searchBarHTMLString); //creates the search bar
 	content.insertAdjacentHTML('afterend', modalHTMLString); //creates the modal
-
+	content.insertAdjacentHTML('beforeend', pageLoaderHTML) //runs the page-loader
+	
+	const pageLoader = document.querySelector('.page-loader');
 	const searchBar = document.getElementById('search');
 
 	const overLay = document.getElementById('over-lay');
@@ -298,7 +303,12 @@
 		.then(R.prop('results'))     		     //expects an Object and returns its results prop value
 		.then(R.map(R.pick(neededProps)))        //picks all the needed props from every employee Object into a new Object
 		.then(R.map(R.evolve(transformations)))  //transformations the Objects to filter out Strings and such (data formats, upper or lowercase, etc)
-		.catch(() => content.insertAdjacentHTML('beforerend', errorElement()))
+		.then(R.tap(() => content.removeChild(pageLoader))) //removes the page-loader animation when response has been sent back
+		.catch((e) => {
+			console.log(e);
+			content.insertAdjacentHTML('beforeend', errorElement);
+			content.removeChild(pageLoader);
+		})
 
 	const employeeElements = employees
 		.then(R.map(createEmployeeElement))              //makes the transformed employee Objects into HTML strings

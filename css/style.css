@@ -190,8 +190,36 @@ li {
 }
 
 .page-loader {
-	
+	position: relative;
+	width: 200px;
+	height: 200px;
+	margin: 0 auto;
 }
+
+.block1,
+.block2 {
+	position: absolute;
+	margin: auto;
+	left: 0;
+	right: 0;
+	top: 0;
+	bottom: 0;
+	width: 25px;
+	height: 25px;
+	border: solid black 5px;
+	background-color: black;
+	border-radius: 50%;
+}
+
+.block1 {
+	animation: move-right-down 1.5s linear infinite;
+}
+
+.block2 {
+	animation: move-left-up 1.5s linear infinite;
+}
+
+
 
 /* ================================= 
   Animations
@@ -222,6 +250,43 @@ li {
 @keyframes flip-ani {
 	from {
 		transform: rotateY(360deg);
+	}
+}
+
+@keyframes move-right-down {
+	0% {
+		transform: translateX(0px);
+	}
+	25% {
+		transform: translateX(50px);
+	}
+	50% {
+		transform: translateX(0px);
+	}
+	75% {
+		transform: translateY(50px);
+	}
+	100% {
+		transform: translateY(0px);
+	}
+	
+}
+
+@keyframes move-left-up {
+	0% {
+		transform: translateX(0px);
+	}
+	25% {
+		transform: translateX(-50px);
+	}
+	50% {
+		transform: translateX(0px);
+	}
+	75% {
+		transform: translateY(-50px);
+	}
+	100% {
+		transform: translateY(0px);
 	}
 }
 
